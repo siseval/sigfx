@@ -5,6 +5,7 @@
 #include <gfx/core/types/pixel.h>
 #include <gfx/core/types/color4.h>
 #include <gfx/core/types/obb-2D.h>
+#include <gfx/core/shader-2D.h>
 #include <gfx/core/render-surface.h>
 #include <gfx/utils/uuid.h>
 #include <gfx/math/box2.h>
@@ -25,6 +26,15 @@ public:
     gfx::core::types::OBB2D get_oriented_bounding_box(const gfx::math::Matrix3x3d &transform) const;
     virtual gfx::math::Box2d get_geometry_size() const = 0;
     virtual gfx::math::Box2d get_axis_aligned_bounding_box(const gfx::math::Matrix3x3d &transform) const;
+
+    gfx::math::Vec2d get_uv(const gfx::math::Vec2d point) const;
+    inline void set_obb_dirty() { obb_dirty = true; }
+
+    inline void set_shader(const std::shared_ptr<gfx::core::Shader2D> &shd) { shader = shd; }
+    inline std::shared_ptr<gfx::core::Shader2D> get_shader() const { return shader; }
+
+    inline void set_use_shader(const bool use) { use_shader = use; }
+    inline bool get_use_shader() const { return use_shader; }
 
     virtual bool point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const = 0;
     inline bool point_collides(const double x, const double y, const gfx::math::Matrix3x3d &transform) const
@@ -49,15 +59,6 @@ public:
         }; 
     }
 
-    inline bool get_draw_aabb() const { return draw_aabb; }
-    inline void set_draw_aabb(const bool draw) { draw_aabb = draw; }
-
-    inline bool get_draw_anchor() const { return draw_anchor; }
-    inline void set_draw_anchor(const bool draw) { draw_anchor = draw; }
-
-    inline bool get_draw_obb() const { return draw_obb; }
-    inline void set_draw_obb(const bool draw) { draw_obb = draw; }
-
     inline gfx::math::Box2d get_bounds() const { return bounds; }
     inline gfx::math::Vec2d get_bounds_size() const { return bounds.size(); }
 
@@ -69,19 +70,19 @@ public:
     inline void set_depth(const int d) { depth = d; }
 
     inline gfx::math::Vec2d get_position() const { return position; }
-    inline void set_position(const gfx::math::Vec2d pos) { position = pos; increment_transform_version(); }
-    inline void set_position(const double x, const double y) { position = gfx::math::Vec2d { x, y }; increment_transform_version(); }
+    inline void set_position(const gfx::math::Vec2d pos) { position = pos; increment_transform_version(); set_obb_dirty(); }
+    inline void set_position(const double x, const double y) { position = gfx::math::Vec2d { x, y }; increment_transform_version(); set_obb_dirty(); }
     
     inline gfx::math::Vec2f get_scale() const { return scale; }
-    inline void set_scale(const gfx::math::Vec2d s) { scale = s; increment_transform_version(); }
-    inline void set_scale(const double sx, const double sy) { scale = gfx::math::Vec2d { sx, sy }; increment_transform_version(); }
-    inline void set_scale(const double s) { scale = gfx::math::Vec2d { s, s }; increment_transform_version(); }
+    inline void set_scale(const gfx::math::Vec2d s) { scale = s; increment_transform_version(); set_obb_dirty(); }
+    inline void set_scale(const double sx, const double sy) { scale = gfx::math::Vec2d { sx, sy }; increment_transform_version(); set_obb_dirty(); }
+    inline void set_scale(const double s) { scale = gfx::math::Vec2d { s, s }; increment_transform_version(); set_obb_dirty(); }
 
     inline double get_rotation() const { return rotation; }
-    inline void set_rotation(const double r) { rotation = r; increment_transform_version(); }
+    inline void set_rotation(const double r) { rotation = r; increment_transform_version(); set_obb_dirty(); }
 
     inline double get_rotation_degrees() const { return rotation * 180 / std::numbers::pi; }
-    inline void set_rotation_degrees(const double r) { rotation = r * std::numbers::pi / 180; increment_transform_version(); }
+    inline void set_rotation_degrees(const double r) { rotation = r * std::numbers::pi / 180; increment_transform_version(); set_obb_dirty(); }
 
     inline bool is_visible() const { return visible; }
     inline void set_visible(const bool v) { visible = v; }
@@ -94,6 +95,11 @@ public:
 protected:
 
     gfx::utils::UUID id;
+    std::shared_ptr<gfx::core::Shader2D> shader;
+    bool use_shader = false;
+
+    mutable types::OBB2D obb;
+    mutable bool obb_dirty = false;
 
     types::Color4 color;
 
@@ -106,9 +112,6 @@ protected:
     bool visible = true;
     double rotation = 0.0;
     int depth = 0;
-    bool draw_aabb = false;
-    bool draw_obb = false;
-    bool draw_anchor = false;
 
     int64_t transform_version = -1;
 

@@ -21,10 +21,10 @@ public:
     bool point_collides(const gfx::math::Vec2d point, const gfx::math::Matrix3x3d &transform) const override;
 
     inline double get_radius() const { return radius; }
-    inline void set_radius(const double r) { radius = r; }
+    inline void set_radius(const double r) { radius = r; set_obb_dirty(); }
 
     inline double get_line_thickness() const { return line_thickness; }
-    inline void set_line_thickness(const double t) { line_thickness = t; }
+    inline void set_line_thickness(const double t) { line_thickness = t; set_obb_dirty(); }
 
     inline bool get_filled() const { return filled; }
     inline void set_filled(const bool f) { filled = f; }

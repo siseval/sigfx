@@ -25,6 +25,7 @@ public:
     {
         resolution = bitmap.resolution;
         pixels = bitmap.pixels;
+        set_obb_dirty();
     }
 
     inline gfx::core::types::Color4 get_pixel(const gfx::math::Vec2i pixel) const 
@@ -47,9 +48,15 @@ public:
             return; 
         }
         pixels[pixel.y * resolution.x + pixel.x] = color;
+        set_obb_dirty();
     };
 
-    inline void set_resolution(const gfx::math::Vec2i new_resolution) { resolution = new_resolution; pixels.resize(resolution.x * resolution.y); }
+    inline void set_resolution(const gfx::math::Vec2i new_resolution) 
+    { 
+        resolution = new_resolution; 
+        pixels.resize(resolution.x * resolution.y); 
+        set_obb_dirty();
+    }
     inline void set_resolution(const int width, const int height) { set_resolution({ width, height }); }
     inline gfx::math::Vec2d get_resolution() const { return resolution; }
 

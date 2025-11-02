@@ -7,7 +7,7 @@
 namespace gfx::core
 {
 
-struct shader_input_2D
+struct ShaderInput2D
 {
     gfx::math::Vec2d uv;
     double t;
@@ -18,7 +18,7 @@ class Shader2D
 
 public:
 
-    virtual types::Color4 frag(const shader_input_2D input) const = 0;
+    virtual types::Color4 frag(const ShaderInput2D &input) const = 0;
 
 
 private:

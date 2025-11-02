@@ -30,12 +30,10 @@ void InteractiveDemo::select(int index)
     }
     if (selected != nullptr)
     {
-        selected->set_draw_aabb(false);
         selected->set_depth(1);
     }
     selected_index = index % items.size();
     selected = get_selected();
-    selected->set_draw_aabb(true);
     selected->set_depth(0);
 }
 
@@ -231,11 +229,9 @@ void InteractiveDemo::handle_input(const int input)
 
         case 'b':
             if (selected == nullptr) { break; }
-            selected->set_draw_aabb(!selected->get_draw_aabb());
             break;
         case 'B':
             if (selected == nullptr) { break; }
-            selected->set_draw_obb(!selected->get_draw_obb());
             break;
 
         case 'n':

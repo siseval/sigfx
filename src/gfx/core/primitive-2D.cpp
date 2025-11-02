@@ -29,6 +29,11 @@ Box2d Primitive2D::get_axis_aligned_bounding_box(const Matrix3x3d &transform) co
 
 OBB2D Primitive2D::get_oriented_bounding_box(const Matrix3x3d &transform) const
 {
+    if (!obb_dirty)
+    {
+        return obb;
+    }
+
     Box2d extent { get_geometry_size() };
 
     OBB2D bounds {
@@ -41,7 +46,16 @@ OBB2D Primitive2D::get_oriented_bounding_box(const Matrix3x3d &transform) const
     bounds.side_x = utils::transform_vector(bounds.side_x, transform);
     bounds.side_y = utils::transform_vector(bounds.side_y, transform);
 
+    obb = bounds;
+    obb_dirty = false;
+
     return bounds;
+}
+
+Vec2d Primitive2D::get_uv(const Vec2d point) const
+{
+    OBB2D obb { get_oriented_bounding_box(get_transform()) };
+    return obb.get_uv(point);
 }
 
 Matrix3x3d Primitive2D::get_transform() const

@@ -23,8 +23,8 @@ public:
 
     bool cache_clockwise();
 
-    inline void add_point(const gfx::math::Vec2d point) { points.push_back(point); cache_clockwise(); }
-    inline void add_points(const std::vector<gfx::math::Vec2d> &new_points) { points.insert(points.end(), new_points.begin(), new_points.end()); cache_clockwise(); }
+    inline void add_point(const gfx::math::Vec2d point) { points.push_back(point); cache_clockwise(); set_obb_dirty(); }
+    inline void add_points(const std::vector<gfx::math::Vec2d> &new_points) { points.insert(points.end(), new_points.begin(), new_points.end()); cache_clockwise(); set_obb_dirty(); }
 
     inline void set_point(const size_t index, const gfx::math::Vec2d point) 
     { 
@@ -32,10 +32,11 @@ public:
         { 
             points[index] = point; 
             cache_clockwise();
+            set_obb_dirty();
         } 
     }
-    inline void set_points(const std::vector<gfx::math::Vec2d> &new_points) { points = new_points; cache_clockwise(); }
-    inline void clear_points() { points.clear(); }
+    inline void set_points(const std::vector<gfx::math::Vec2d> &new_points) { points = new_points; cache_clockwise(); set_obb_dirty(); }
+    inline void clear_points() { points.clear(); set_obb_dirty(); }
 
     inline const std::vector<gfx::math::Vec2d> get_points() const { return points; }
 

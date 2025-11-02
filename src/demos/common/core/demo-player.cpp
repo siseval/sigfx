@@ -6,6 +6,7 @@
 #include <demos/common/animations/text/text-demo.h>
 #include <demos/common/animations/fractal/fractal-demo.h>
 #include <demos/common/animations/boids/boids-demo.h>
+#include <demos/common/animations/shader/shader-demo.h>
 
 namespace demos::common::core
 {
@@ -20,6 +21,7 @@ using namespace demos::common;
 void DemoPlayer::init()
 {
     // demos.emplace_back(std::make_shared<text::TextDemo>(renderer));
+    demos.emplace_back(std::make_shared<shader::ShaderDemo>(renderer));
     demos.emplace_back(std::make_shared<star::StarDemo>(renderer));
     demos.emplace_back(std::make_shared<snake::SnakeDemo>(renderer));
     demos.emplace_back(std::make_shared<fireworks::FireworksDemo>(renderer));

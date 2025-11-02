@@ -1,6 +1,7 @@
 #ifndef GLFW_DEMO_PLAYER_H
 #define GLFW_DEMO_PLAYER_H
 
+#include <iostream>
 #include <gfx/core/render-2D.h>
 #include <gfx/surfaces/glfw/glfw-render-surface.h>
 #include <demos/common/core/demo-player.h>
@@ -60,6 +61,13 @@ public:
             "   [" + std::to_string(x) + "x" + std::to_string(y) + "]"
 
         );
+
+        std::cout << "\033[2J\033[1;1H";
+        std::vector<std::string> debug_lines = demos[current_demo]->debug_text();
+        for (size_t i = 0; i < debug_lines.size(); ++i)
+        {
+            std::cout << debug_lines[i] << std::endl;
+        }
     }
 
 private:

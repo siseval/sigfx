@@ -23,9 +23,9 @@ public:
 
     bool cache_clockwise();
 
-    inline void add_point(const gfx::math::Vec2d point) { points.push_back(point); cache_clockwise(); }
-    inline void add_point(const double x, const double y) { points.push_back(gfx::math::Vec2d { x, y }); cache_clockwise(); }
-    inline void add_points(const std::vector<gfx::math::Vec2d> &new_points) { points.insert(points.end(), new_points.begin(), new_points.end()); cache_clockwise(); }
+    inline void add_point(const gfx::math::Vec2d point) { points.push_back(point); cache_clockwise(); set_obb_dirty(); }
+    inline void add_point(const double x, const double y) { points.push_back(gfx::math::Vec2d { x, y }); cache_clockwise(); set_obb_dirty(); }
+    inline void add_points(const std::vector<gfx::math::Vec2d> &new_points) { points.insert(points.end(), new_points.begin(), new_points.end()); cache_clockwise(); set_obb_dirty(); }
 
     inline void set_point(const size_t index, const gfx::math::Vec2d point) 
     { 
@@ -33,6 +33,7 @@ public:
         { 
             points[index] = point; 
             cache_clockwise();
+            set_obb_dirty();
         } 
     }
     inline void set_point(const size_t index, const double x, const double y) 
@@ -41,9 +42,10 @@ public:
         { 
             points[index] = gfx::math::Vec2d { x, y }; 
             cache_clockwise();
+            set_obb_dirty();
         } 
     }
-    inline void set_points(const std::vector<gfx::math::Vec2d> &new_points) { points = new_points; cache_clockwise(); }
+    inline void set_points(const std::vector<gfx::math::Vec2d> &new_points) { points = new_points; cache_clockwise(); set_obb_dirty(); }
     inline void clear_points() { points.clear(); }
 
     inline void set_segment_visible(const size_t index, const bool visible) 
@@ -81,10 +83,10 @@ public:
     inline void set_close(const bool close) { do_close = close; }
     inline bool get_close() const { return do_close; }
 
-    inline void set_rounded_corners(const bool rounded) { do_rounded_corners = rounded; }
+    inline void set_rounded_corners(const bool rounded) { do_rounded_corners = rounded; set_obb_dirty(); }
     inline bool get_rounded_corners() const { return do_rounded_corners; }
 
-    inline void set_line_thickness(const double t) { line_thickness = t; }
+    inline void set_line_thickness(const double t) { line_thickness = t; set_obb_dirty(); }
     inline double get_line_thickness() const { return line_thickness; }
 
     inline void set_fill(const bool f) { do_fill = f; }

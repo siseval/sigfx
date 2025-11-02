@@ -13,18 +13,33 @@ void Render2D::draw_frame() const
 {
     surface->clear_frame_buffer();
 
-    std::function<void(const Pixel&)> emit_pixel = 
-        [this](const Pixel &pixel) {
-            surface->write_pixel(pixel.position, pixel.color);
-        };
+    double t { std::chrono::duration<double, std::milli>(
+        std::chrono::high_resolution_clock::now().time_since_epoch()
+    ).count() / 1000 };
 
-    std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> draw_queue { get_draw_queue() };
+
+    std::vector<std::pair<std::shared_ptr<Primitive2D>, Matrix3x3d>> draw_queue { 
+        get_draw_queue() 
+    };
+
     for (const auto& [primitive, transform] : draw_queue)
     {
         if (!primitive->is_visible())
         {
             continue;
         }
+
+        std::function<void(const Pixel&)> emit_pixel = primitive->get_use_shader() ?
+            std::function([this, primitive, t](const Pixel &pixel) {
+                Vec2d uv { primitive->get_uv(pixel.position) };
+                ShaderInput2D input { uv, t };
+                Color4 shaded_color { primitive->get_shader()->frag(input) };
+                surface->write_pixel(pixel.position, shaded_color);
+            }) :
+            std::function([this](const Pixel &pixel) {
+                surface->write_pixel(pixel.position, pixel.color);
+            });
+
         primitive->rasterize(transform, emit_pixel);
     }
 
