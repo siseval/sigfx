@@ -134,7 +134,7 @@ uint8_t CursesRenderSurface::add_color(const Color4 color)
     uint8_t index { static_cast<uint8_t>(color_index + DEDICATED_CURSES_COLOR_START_INDEX) };
     palette->emplace(color, index);
     color_index += 1;
-    init_color(index, color.r_float() * 1000, color.g_float() * 1000, color.b_float() * 1000);
+    init_color(index, color.r_double() * 1000, color.g_double() * 1000, color.b_double() * 1000);
     init_pair(index, index, -1);
     return index;
 }

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <algorithm>
 
 namespace gfx::core::types
 {
@@ -20,6 +21,8 @@ public:
 
     Color4(double r, double g, double b, double a) : r(static_cast<uint8_t>(r * 255.0)), g(static_cast<uint8_t>(g * 255.0)), b(static_cast<uint8_t>(b * 255.0)), a(static_cast<uint8_t>(a * 255.0)) {}
     Color4(double r, double g, double b) : r(static_cast<uint8_t>(r * 255.0)), g(static_cast<uint8_t>(g * 255.0)), b(static_cast<uint8_t>(b * 255.0)), a(255) {}
+
+    Color4(double x) : r(static_cast<uint8_t>(x * 255.0)), g(static_cast<uint8_t>(x * 255.0)), b(static_cast<uint8_t>(x * 255.0)), a(255) {}
 
     Color4() : Color4(0, 0, 0, 0) {}
 
@@ -48,13 +51,41 @@ public:
     uint8_t b;
     uint8_t a = 255;
 
+    Color4 operator+(const Color4 &other) const 
+    { 
+        return Color4(
+            static_cast<uint8_t>(std::min(255, r + other.r)),
+            static_cast<uint8_t>(std::min(255, g + other.g)),
+            static_cast<uint8_t>(std::min(255, b + other.b)),
+            static_cast<uint8_t>(std::min(255, a + other.a))
+        ); 
+    }
+    Color4 operator*(const double scalar) const 
+    { 
+        return Color4(
+            static_cast<uint8_t>(std::clamp(static_cast<int>(r * scalar), 0, 255)),
+            static_cast<uint8_t>(std::clamp(static_cast<int>(g * scalar), 0, 255)),
+            static_cast<uint8_t>(std::clamp(static_cast<int>(b * scalar), 0, 255)),
+            static_cast<uint8_t>(std::clamp(static_cast<int>(a * scalar), 0, 255))
+        ); 
+    }
+    Color4 operator*(const Color4 &other) const 
+    { 
+        return Color4(
+            static_cast<uint8_t>((r * other.r) / 255),
+            static_cast<uint8_t>((g * other.g) / 255),
+            static_cast<uint8_t>((b * other.b) / 255),
+            static_cast<uint8_t>((a * other.a) / 255)
+        ); 
+    }
+
     bool operator==(const Color4 &other) const { return r == other.r && g == other.g && b == other.b && a == other.a; }
     void operator=(const Color4 &other) { r = other.r; g = other.g; b = other.b; a = other.a; }
 
-    inline float r_float() const { return r / 255.0f; }
-    inline float g_float() const { return g / 255.0f; }
-    inline float b_float() const { return b / 255.0f; }
-    inline float a_float() const { return a / 255.0f; }
+    inline float r_double() const { return r / 255.0f; }
+    inline float g_double() const { return g / 255.0f; }
+    inline float b_double() const { return b / 255.0f; }
+    inline float a_double() const { return a / 255.0f; }
 
     inline int32_t to_i32() const { return (r << 24) | (g << 16) | (b << 8) | (a); }
 
@@ -68,6 +99,7 @@ public:
             static_cast<uint8_t>(a.a + (b.a - a.a) * t)
         );
     }
+
 };
 
 

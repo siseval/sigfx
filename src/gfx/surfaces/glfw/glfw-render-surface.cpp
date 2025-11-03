@@ -28,6 +28,25 @@ int GLFWRenderSurface::init()
     glfwWindowHint(GLFW_BLUE_BITS, 8);
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
 
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    if (!monitor) 
+    {
+        glfwTerminate();
+        throw std::runtime_error("Failed to get primary monitor");
+        return -1;
+    }
+
+    GLFWvidmode const* mode = glfwGetVideoMode(monitor);
+    if (!mode) 
+    {
+        glfwTerminate();
+        throw std::runtime_error("Failed to get video mode");
+        return -1;
+    }
+
+    gl_window_size = { mode->width, mode->height };
+    refresh_rate_hz = mode->refreshRate;
+
     window = glfwCreateWindow(resolution.x, resolution.y, window_title.c_str(), nullptr, nullptr);
     if (!window) 
     {
@@ -56,10 +75,10 @@ int GLFWRenderSurface::init()
     glViewport(0, 0, resolution.x, resolution.y);
     
     glClearColor(
-        clear_color.r_float(), 
-        clear_color.g_float(), 
-        clear_color.b_float(), 
-        clear_color.a_float()
+        clear_color.r_double(), 
+        clear_color.g_double(), 
+        clear_color.b_double(), 
+        clear_color.a_double()
     );
 
     return 0;

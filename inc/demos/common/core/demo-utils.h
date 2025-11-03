@@ -7,7 +7,7 @@
 namespace demos::common::core::utils
 {
 
-inline double ease_in_out_cubic(double t)
+inline double ease_in_out_cubic(const double t)
 {
     return t < 0.5
         ? 4.0 * t * t * t
@@ -16,7 +16,7 @@ inline double ease_in_out_cubic(double t)
 
 inline double smoothstep(const double d)
 {
-    return d * d * (3 - 2 * d);
+    return d * d * (3.0 - 2.0 * d);
 }
 
 inline double exponential_step(const double t, const double k = 5.0)
@@ -80,7 +80,7 @@ inline double lerp(const double a, const double b, const double t)
     return a + (b - a) * (t < 0 ? 0 : (t > 1 ? 1 : t));
 }
 
-inline double inv_lerp(int a, int b, double v)
+inline double inv_lerp(const double a, const double b, const double v)
 {
     return (v - a) / (b - a);
 }

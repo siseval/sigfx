@@ -15,6 +15,7 @@ void rasterize_filled_triangle(const Triangle &triangle, const core::types::Colo
 
 
 static constexpr int CORNER_SEGMENTS = 8;
+static constexpr int MIN_MULTITHREAD_PIXELS { 200 * 200 };
 
 }
 

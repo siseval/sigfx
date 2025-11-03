@@ -28,6 +28,8 @@ public:
     virtual gfx::math::Box2d get_axis_aligned_bounding_box(const gfx::math::Matrix3x3d &transform) const;
 
     gfx::math::Vec2d get_uv(const gfx::math::Vec2d point) const;
+
+    inline bool is_obb_dirty() const { return obb_dirty; }
     inline void set_obb_dirty() { obb_dirty = true; }
 
     inline void set_shader(const std::shared_ptr<gfx::core::Shader2D> &shd) { shader = shd; }
@@ -63,32 +65,89 @@ public:
     inline gfx::math::Vec2d get_bounds_size() const { return bounds.size(); }
 
     inline gfx::math::Vec2d get_anchor() const { return anchor; }
-    inline void set_anchor(const gfx::math::Vec2d pos) { anchor = pos; increment_transform_version(); }
-    inline void set_anchor(const double x, const double y) { anchor = gfx::math::Vec2d { x, y }; increment_transform_version(); }
+    inline void set_anchor(const gfx::math::Vec2d pos) 
+    { 
+        anchor = pos; 
+        increment_transform_version(); 
+        set_obb_dirty();
+        set_transform_dirty();
+    }
+    inline void set_anchor(const double x, const double y) 
+    { 
+        anchor = gfx::math::Vec2d { x, y }; 
+        increment_transform_version(); 
+        set_obb_dirty();
+        set_transform_dirty();
+    }
 
     inline int get_depth() const { return depth; }
     inline void set_depth(const int d) { depth = d; }
 
     inline gfx::math::Vec2d get_position() const { return position; }
-    inline void set_position(const gfx::math::Vec2d pos) { position = pos; increment_transform_version(); set_obb_dirty(); }
-    inline void set_position(const double x, const double y) { position = gfx::math::Vec2d { x, y }; increment_transform_version(); set_obb_dirty(); }
+    inline void set_position(const gfx::math::Vec2d pos) 
+    { 
+        position = pos; 
+        increment_transform_version(); 
+        set_obb_dirty(); 
+        set_transform_dirty();
+    }
+    inline void set_position(const double x, const double y) 
+    { 
+        position = gfx::math::Vec2d { x, y }; 
+        increment_transform_version(); 
+        set_obb_dirty(); 
+        set_transform_dirty();
+    }
     
     inline gfx::math::Vec2f get_scale() const { return scale; }
-    inline void set_scale(const gfx::math::Vec2d s) { scale = s; increment_transform_version(); set_obb_dirty(); }
-    inline void set_scale(const double sx, const double sy) { scale = gfx::math::Vec2d { sx, sy }; increment_transform_version(); set_obb_dirty(); }
-    inline void set_scale(const double s) { scale = gfx::math::Vec2d { s, s }; increment_transform_version(); set_obb_dirty(); }
+    inline void set_scale(const gfx::math::Vec2d s) 
+    { 
+        scale = s; 
+        increment_transform_version(); 
+        set_obb_dirty(); 
+        set_transform_dirty();
+    }
+    inline void set_scale(const double sx, const double sy) 
+    { 
+        scale = gfx::math::Vec2d { sx, sy }; 
+        increment_transform_version(); 
+        set_obb_dirty(); 
+        set_transform_dirty();
+    }
+    inline void set_scale(const double s) 
+    { 
+        scale = gfx::math::Vec2d { s, s }; 
+        increment_transform_version(); 
+        set_obb_dirty(); 
+        set_transform_dirty();
+    }
 
     inline double get_rotation() const { return rotation; }
-    inline void set_rotation(const double r) { rotation = r; increment_transform_version(); set_obb_dirty(); }
+    inline void set_rotation(const double r) 
+    { 
+        rotation = r; 
+        increment_transform_version(); 
+        set_obb_dirty(); 
+        set_transform_dirty();
+    }
 
     inline double get_rotation_degrees() const { return rotation * 180 / std::numbers::pi; }
-    inline void set_rotation_degrees(const double r) { rotation = r * std::numbers::pi / 180; increment_transform_version(); set_obb_dirty(); }
+    inline void set_rotation_degrees(const double r) 
+    { 
+        rotation = r * std::numbers::pi / 180; 
+        increment_transform_version(); 
+        set_obb_dirty(); 
+        set_transform_dirty();
+    }
 
     inline bool is_visible() const { return visible; }
     inline void set_visible(const bool v) { visible = v; }
 
     inline int64_t get_transform_version() const { return transform_version; }
     inline void increment_transform_version() { transform_version++; }
+
+    inline bool is_transform_dirty() const { return transform_dirty; }
+    inline void set_transform_dirty() { transform_dirty = true; }
 
     static int count;
 
@@ -97,9 +156,6 @@ protected:
     gfx::utils::UUID id;
     std::shared_ptr<gfx::core::Shader2D> shader;
     bool use_shader = false;
-
-    mutable types::OBB2D obb;
-    mutable bool obb_dirty = false;
 
     types::Color4 color;
 
@@ -113,6 +169,11 @@ protected:
     double rotation = 0.0;
     int depth = 0;
 
+    mutable types::OBB2D cached_obb;
+    mutable bool obb_dirty = false;
+
+    mutable gfx::math::Matrix3x3d cached_transform;
+    mutable bool transform_dirty = false;
     int64_t transform_version = -1;
 
     // bool should_fill_pixel(std::shared_ptr<GfxContext2D> context, const gfx::math::Vec2d pixel) const;

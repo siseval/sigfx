@@ -1,3 +1,4 @@
+#include <thread>
 #include <gfx/core/render-surface.h>
 #include <gfx/math/vec2.h>
 #include <gfx/math/box2.h>
@@ -14,16 +15,17 @@ using namespace gfx::core::types;
 using namespace gfx::math;
 
 
+
 void rasterize_filled_triangle(const Triangle &triangle, const Color4 color, const std::function<void(const Pixel&)> emit_pixel)
 {
     Box2i bounds {
-        Vec2d { 
-            std::min({triangle.v0.x,triangle.v1.x,triangle.v2.x }), 
-            std::min({triangle.v0.y,triangle.v1.y,triangle.v2.y }) 
+        Vec2d {
+            std::min({triangle.v0.x,triangle.v1.x,triangle.v2.x }),
+            std::min({triangle.v0.y,triangle.v1.y,triangle.v2.y })
         }.round(),
-        Vec2d { 
-            std::max({triangle.v0.x,triangle.v1.x,triangle.v2.x }), 
-            std::max({triangle.v0.y,triangle.v1.y,triangle.v2.y }) 
+        Vec2d {
+            std::max({triangle.v0.x,triangle.v1.x,triangle.v2.x }),
+            std::max({triangle.v0.y,triangle.v1.y,triangle.v2.y })
         }.round()
     };
 
@@ -46,31 +48,90 @@ void rasterize_filled_triangle(const Triangle &triangle, const Color4 color, con
         return;
     }
 
-    double w0_row = a * (bounds.min.x + 0.5) + b * (bounds.min.y + 0.5) + c;
-    double w1_row = d * (bounds.min.x + 0.5) + e * (bounds.min.y + 0.5) + f;
-    double w2_row = g * (bounds.min.x + 0.5) + h * (bounds.min.y + 0.5) + i;
+    constexpr int TILE_SIZE = 32;
 
-    for (int y = bounds.min.y; y <= bounds.max.y; ++y)
+    int width  = bounds.max.x - bounds.min.x + 1;
+    int height = bounds.max.y - bounds.min.y + 1;
+    std::size_t resolution = static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
+
+    struct Tile { Box2i box; };
+    std::vector<Tile> tiles;
+    for (int ty = bounds.min.y; ty <= bounds.max.y; ty += TILE_SIZE)
     {
-        double w0 = w0_row;
-        double w1 = w1_row;
-        double w2 = w2_row;
-
-        for (int x = bounds.min.x; x <= bounds.max.x; ++x)
+        for (int tx = bounds.min.x; tx <= bounds.max.x; tx += TILE_SIZE)
         {
-            if ((w0 * w1 >= 0) && (w1 * w2 >= 0)) 
+            Box2i tb;
+            tb.min.x = tx;
+            tb.min.y = ty;
+            tb.max.x = std::min(tx + TILE_SIZE - 1, bounds.max.x);
+            tb.max.y = std::min(ty + TILE_SIZE - 1, bounds.max.y);
+            tiles.push_back(Tile{ tb });
+        }
+    }
+
+    auto rasterize_tile = [&](const Box2i &tb) {
+
+        double start_x = static_cast<double>(tb.min.x) + 0.5;
+        double start_y = static_cast<double>(tb.min.y) + 0.5;
+
+        double w0_row = a * start_x + b * start_y + c;
+        double w1_row = d * start_x + e * start_y + f;
+        double w2_row = g * start_x + h * start_y + i;
+
+        for (int y = tb.min.y; y <= tb.max.y; ++y)
+        {
+            double w0 = w0_row;
+            double w1 = w1_row;
+            double w2 = w2_row;
+
+            for (int x = tb.min.x; x <= tb.max.x; ++x)
             {
-                emit_pixel(Pixel { Vec2i { x, y }, color });
+                if ((w0 * w1 >= 0) && (w1 * w2 >= 0))
+                {
+                    emit_pixel(Pixel { Vec2i { x, y }, color });
+                }
+
+                w0 += a;
+                w1 += d;
+                w2 += g;
             }
 
-            w0 += a;
-            w1 += d;
-            w2 += g;
+            w0_row += b;
+            w1_row += e;
+            w2_row += h;
+        }
+    };
+
+    if (resolution > MIN_MULTITHREAD_PIXELS && tiles.size() > 1)
+    {
+        unsigned int hw = std::thread::hardware_concurrency();
+        unsigned int num_threads = hw ? hw : 2;
+        num_threads = static_cast<unsigned int>(std::min<std::size_t>(num_threads, tiles.size()));
+
+        std::vector<std::thread> threads;
+        threads.reserve(num_threads);
+
+        for (unsigned int ti = 0; ti < num_threads; ++ti)
+        {
+            threads.emplace_back([ti, num_threads, &tiles, &rasterize_tile]() {
+                for (std::size_t idx = ti; idx < tiles.size(); idx += num_threads)
+                {
+                    rasterize_tile(tiles[idx].box);
+                }
+            });
         }
 
-        w0_row += b;
-        w1_row += e;
-        w2_row += h;
+        for (auto &th : threads)
+        {
+            if (th.joinable()) th.join();
+        }
+    }
+    else
+    {
+        for (const auto &t : tiles)
+        {
+            rasterize_tile(t.box);
+        }
     }
 }
 

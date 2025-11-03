@@ -31,7 +31,7 @@ OBB2D Primitive2D::get_oriented_bounding_box(const Matrix3x3d &transform) const
 {
     if (!obb_dirty)
     {
-        return obb;
+        return cached_obb;
     }
 
     Box2d extent { get_geometry_size() };
@@ -46,7 +46,7 @@ OBB2D Primitive2D::get_oriented_bounding_box(const Matrix3x3d &transform) const
     bounds.side_x = utils::transform_vector(bounds.side_x, transform);
     bounds.side_y = utils::transform_vector(bounds.side_y, transform);
 
-    obb = bounds;
+    cached_obb = bounds;
     obb_dirty = false;
 
     return bounds;
@@ -60,6 +60,11 @@ Vec2d Primitive2D::get_uv(const Vec2d point) const
 
 Matrix3x3d Primitive2D::get_transform() const
 {
+    if (!transform_dirty)
+    {
+        return cached_transform;
+    }
+
     Vec2d size { get_geometry_size().size() };
     Vec2d anchor_offset { get_anchor() * size };
 
@@ -68,7 +73,10 @@ Matrix3x3d Primitive2D::get_transform() const
     Matrix3x3d rotation_matrix { utils::rotate(rotation) };
     Matrix3x3d position_translation_matrix { utils::translate(get_position()) };
 
-    return position_translation_matrix * rotation_matrix * scale_matrix * anchor_translation_matrix;
+    cached_transform = position_translation_matrix * rotation_matrix * scale_matrix * anchor_translation_matrix;
+    transform_dirty = false;
+
+    return cached_transform;
 }
 
 }

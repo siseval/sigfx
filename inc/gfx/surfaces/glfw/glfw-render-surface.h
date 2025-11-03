@@ -56,6 +56,9 @@ private:
     GLFWwindow* window;
     std::unique_ptr<std::vector<int32_t>> frame_buffer;
 
+    gfx::math::Vec2i gl_window_size { 800, 600 };
+    double refresh_rate_hz = 60.0;
+
     GLuint texture = 0;
     GLuint vao = 0;
     GLuint vbo = 0;
