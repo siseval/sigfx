@@ -67,7 +67,7 @@ private:
     void render_obb(const gfx::core::types::OBB2D &obb);
     void render_anchor_point(const gfx::math::Vec2d anchor);
 
-    bool enabled = true;
+    bool enabled = false;
 
     bool show_aabb = true;
     bool show_obb = true;

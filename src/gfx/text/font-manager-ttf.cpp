@@ -285,6 +285,60 @@ std::shared_ptr<FontTTF> FontManagerTTF::load_from_memory(const uint8_t* data, c
                 subtable_ptr += st_length;
             }
         }
+
+    }
+
+    auto it_hmtx { tables.find("hmtx") };
+    if (it_hmtx == tables.end())
+    {
+        throw std::runtime_error("Missing 'hmtx' table.");
+        return nullptr;
+    }
+
+    auto it_hhea { tables.find("hhea") };
+    if (it_hhea == tables.end())
+    {
+        throw std::runtime_error("Missing 'hhea' table.");
+        return nullptr;
+    }
+
+    const uint8_t* hhea_table { data + it_hhea->second.offset };
+    uint16_t number_of_h_metrics { read_u16(hhea_table + 34) };
+
+    const uint8_t* hmtx_table { data + it_hmtx->second.offset };
+    std::size_t hmtx_length { it_hmtx->second.length };
+
+    if (hmtx_length < number_of_h_metrics * 4)
+    {
+        throw std::runtime_error("Invalid 'hmtx' table length.");
+        return nullptr;
+    }
+
+    std::vector<GlyphMetrics> glyph_metrics(num_glyphs);
+
+    for (uint16_t i = 0; i < number_of_h_metrics; ++i)
+    {
+        glyph_metrics[i].advance_width = read_u16(hmtx_table + i * 4);
+        glyph_metrics[i].left_side_bearing = read_s16(hmtx_table + i * 4 + 2);
+    }
+
+    if (number_of_h_metrics < num_glyphs)
+    {
+        int last_advance { glyph_metrics[number_of_h_metrics - 1].advance_width };
+        const uint8_t* lsb_ptr { hmtx_table + number_of_h_metrics * 4 };
+        for (uint16_t i = number_of_h_metrics; i < num_glyphs; ++i)
+        {
+            glyph_metrics[i].advance_width = last_advance;
+            glyph_metrics[i].left_side_bearing = read_s16(lsb_ptr + (i - number_of_h_metrics) * 2);
+        }
+    }
+
+    for (auto &[codepoint, glyph_index] : codepoint_to_index)
+    {
+        if (glyph_index < glyph_metrics.size())
+        {
+            font->set_metrics(codepoint, glyph_metrics[glyph_index]);
+        }
     }
 
     loaded_fonts.push_back(font);

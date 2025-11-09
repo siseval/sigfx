@@ -34,7 +34,7 @@ void TextDemo::init()
         Color4(1.0, 0.0, 0.0, 1.0)
     );
     text_item->set_scale(3.0);
-    text_item->set_anchor({ 0.5, 0.5 });
+    text_item->set_anchor(0.5, 0.5);
     renderer->add_item(text_item);
 }
 
@@ -56,7 +56,6 @@ void TextDemo::render_frame(const double dt)
     double time_ms { t0 / 1000.0 };
 
     double scale = 3.0 + 2.0 * std::sin(time_ms * 0.002);
-    double rotation = std::fmod(time_ms * 0.05, 360.0);
 
     Color4 color {
         0.5 + 0.5 * std::sin(time_ms * 0.001),
@@ -67,7 +66,7 @@ void TextDemo::render_frame(const double dt)
 
     text_item->set_scale(scale);
     text_item->set_color(color);
-    // text_item->set_rotation_degrees(rotation);
+    text_item->set_rotation(time_ms * 0.001);
 
     renderer->draw_frame();
 
